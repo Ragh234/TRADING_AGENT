@@ -13,14 +13,13 @@ from typing import Any
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 
-load_dotenv()
+load_dotenv(override=True)
 
-@lru_cache(maxsize=1)
 def get_llm() -> ChatGroq:
-    """Return a single, cached Groq LLM instance."""
-    api_key = os.getenv("GROQ_API_KEY", "")
-    if not api_key:
-        raise RuntimeError("GROQ_API_KEY is not set in your .env file.")
+    """Return a fresh Groq LLM instance on every call to avoid caching old keys."""
+    api_key = os.getenv("GROQ_API_KEY", "").strip()
+    if not api_key or api_key.startswith("your_groq"):
+        raise RuntimeError(f"Invalid or missing GROQ_API_KEY. Current value: '{api_key}'")
     return ChatGroq(
         model="llama-3.3-70b-versatile",
         temperature=0.2,
