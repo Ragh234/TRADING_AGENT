@@ -19,7 +19,14 @@ def get_llm() -> ChatGroq:
     """Return a fresh Groq LLM instance on every call to avoid caching old keys."""
     api_key = os.getenv("GROQ_API_KEY", "").strip()
     if not api_key or api_key.startswith("your_groq"):
-        raise RuntimeError(f"Invalid or missing GROQ_API_KEY. Current value: '{api_key}'")
+        # Report *why* the key was rejected without echoing its value —
+        # this exception is caught and rendered straight into the
+        # Streamlit UI (see app.py), so the raw key must never appear in it.
+        reason = "not set" if not api_key else "looks like the .env.example placeholder"
+        raise RuntimeError(
+            f"Invalid or missing GROQ_API_KEY ({reason}). "
+            "Set a real key in your .env file — see .env.example."
+        )
     return ChatGroq(
         model="llama-3.3-70b-versatile",
         temperature=0.2,
