@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+jobs:
+  install-and-compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Byte-compile all modules
+        run: python -m compileall -q agents app.py graph.py state.py
+
+    # NOTE: no functional test suite here on purpose. Every agent makes a
+    # live network call (yfinance, GNews, CoinGecko, Groq) and the graph
+    # requires a real GROQ_API_KEY, so there is nothing meaningful to run
+    # without secrets. This job proves the dependency set installs cleanly
+    # and every module is at least syntactically valid.
